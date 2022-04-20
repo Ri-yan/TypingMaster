@@ -3,18 +3,90 @@ import random
 from ttkthemes import *
 from tkinter import ttk
 from time import sleep
+import threading  # to execute two function together
+from tkinter import messagebox  # for message box
 
-totalTime =60
+
+
+
+def changeBG(widget):
+    widget.config(bg='dark blue')
+    widget.after(300, lambda: widget.config(bg='black'))
+
+
+totalTime = 60
+time = 0
+wrongwords_count = 0
+elaspedtimeinminutes = 0
+
+
 def start_timer():
+    startButton.config(state=DISABLED)
+    global time
     textArea.config(state=NORMAL)
     textArea.focus()
     for time in range(1, 61):
         elapsed_timer_label.config(text=time)
-        remaining_time = totalTime-time
+        remaining_time = totalTime - time
         remaining_timer_label.config(text=remaining_time)
         sleep(1)
         root.update()
+    textArea.config(state=DISABLED)
+    resetButton.config(state=NORMAL)
 
+
+def count():
+    global wrongwords_count, elaspedtimeinminutes
+    while time != totalTime:
+        entered_para = textArea.get(1.0, END).split()  # getting text area things and storing them as list
+        totalWords = len(entered_para)
+    totalwords_count_label.config(text=totalWords)
+
+    para_word_list = labelParagraph['text'].split()
+
+    for pair in list(zip(para_word_list, entered_para)):
+        if pair[0] != pair[1]:
+            wrongwords_count += 1
+    wrongwords_count_label.config(text=wrongwords_count)
+    elaspedtimeinminutes = time / 60
+    wpm = (totalWords - wrongwords_count) / elaspedtimeinminutes
+    wpm_count_label.config(text=wpm)
+    gross_wpm = totalWords / elaspedtimeinminutes
+    accuracy = wpm / gross_wpm * 100
+    accuracy = round(accuracy)
+    accuracy_percent_label.config(text=str(accuracy) + '%')
+
+
+def start():
+    t1 = threading.Thread(target=start_timer)
+    t1.start()
+    t2 = threading.Thread(target=count)
+    t2.start()
+
+
+def reset():
+    global time, elaspedtimeinminutes
+    time = 0
+    elaspedtimeinminutes = 0
+    startButton.config(state=NORMAL)
+    resetButton.config(state=DISABLED)
+    textArea.config(state=NORMAL)
+    textArea.delete(1.0, END)
+    textArea.config(state=DISABLED)
+    remaining_timer_label.config(text=0)
+    elapsed_timer_label.config(text=0)
+    accuracy_percent_label.config(text=0)
+    wpm_count_label.config(text=0)
+    totalwords_count_label.config(text=0)
+    wrongwords_count_label.config(text=0)
+
+
+def exit_window():
+    res = messagebox.askyesno('Confirm', 'Sure You want to exit')
+    if res:
+        root.destroy()  # this will close the root window
+    else:
+        pass
 
 # GUI PART ##############################
 
@@ -23,6 +95,7 @@ root = ThemedTk()
 root.get_themes()
 root.set_theme('radiance')
 root.geometry('940x735+200+0')
+root.title('MasterTyping by Mohd Riyan')
 root.resizable(0, 0)
 root.overrideredirect(True)  # removes title bar
 
@@ -37,20 +110,52 @@ titleLabel.grid(pady=5)
 paragraph_frame = Frame(mainFrame)
 paragraph_frame.grid(row=1, column=0)
 paragraph_list = [
-    ' I failed the first quarter of a class in middle school, so I made a fake report card. I did this every quarter that year. I forgot that they mail home the end-of-year cards, and my mom got it before I could intercept with my fake. She was PISSED—at the school for their error. The teacher also retired that year and had already thrown out his records, so they had to take my mother’s “proof” (the fake ones I made throughout the year) and “correct” the “mistake.” ',
+    'I failed the first quarter of a class in middle school, so I made a fake report card. I did this every quarter '
+    'that year. I forgot that they mail home the end-of-year cards, and my mom got it before I could intercept with '
+    'my fake. She was PISSED—at the school for their error. The teacher also retired that year and had already thrown '
+    'out his records, so they had to take my mother’s “proof” (the fake ones I made throughout the year) and '
+    '“correct” the “mistake.” ',
 
-    ' In my junior year of high school, this guy asked me on a date. He rented a Redbox movie and made a pizza. We were watching the movie and the oven beeped so the pizza was done. He looked me dead in the eye and said, “This is the worst part.” I then watched this boy open the oven and pull the pizza out with his bare hands, rack and all, screaming at the top of his lungs. We never had a second date.Ok so then what is i cannot tell you because that didnt happen.',
+    'In my junior year of high school, this guy asked me on a date. He rented a Redbox movie and made a pizza. We '
+    'were watching the movie and the oven beeped so the pizza was done. He looked me dead in the eye and said, '
+    '“This is the worst part.” I then watched this boy open the oven and pull the pizza out with his bare hands, '
+    'rack and all, screaming at the top of his lungs. We never had a second date.Ok so then what is i cannot tell you '
+    'because that didnt happen.',
 
-    'I went to this girl’s party the week after she beat the shit out of my friend. While everyone was getting trashed, I went around putting tuna inside all the curtain rods and so like weeks went by and they couldn’t figure out why the house smelled like festering death. They caught me through this video where these guys at the party were singing Beyonce while I was in the background with a can of tuna.This is what happened in this short funny story if you like.',
+    'I went to this girl’s party the week after she beat the shit out of my friend. While everyone was getting '
+    'trashed, I went around putting tuna inside all the curtain rods and so like weeks went by and they couldn’t '
+    'figure out why the house smelled like festering death. They caught me through this video where these guys at the '
+    'party were singing Beyonce while I was in the background with a can of tuna.This is what happened in this short '
+    'funny story if you like.',
 
-    'One time way back in sixth grade math class I had to fart really bad. Me being the idiot that I am decided that it would be silent. Big surprise it wasn’t. The only person talking was the teacher and she was interrupted by freaking cannon fire farts. She said she was disappointed I couldn’t hold it in and proceeded to tell a story of how she taught a famous athlete who did nearly the same thing.I felt ashamed then everyone laughed and at the end I also laughed.',
+    'One time way back in sixth grade math class I had to fart really bad. Me being the idiot that I am decided that '
+    'it would be silent. Big surprise it wasn’t. The only person talking was the teacher and she was interrupted by '
+    'freaking cannon fire farts. She said she was disappointed I couldn’t hold it in and proceeded to tell a story of '
+    'how she taught a famous athlete who did nearly the same thing.I felt ashamed then everyone laughed and at the '
+    'end I also laughed.',
 
-    'So a couple weeks ago, me and my friends were sitting on this cement kind of pedestal (as we called it) It’s basically the steps up to the portable. (classroom that no one uses) and this weird supply French teacher comes up to us and says: you shouldn’t be sitting on this ground, it’s too cold and it’s bad for your ovaries. I asked her how or why and she said that if children sit on cold ground their ovaries will freeze and that we won’t be able to have kids.',
-    'One of the most valuable possession of human life is its health. With good health, one can attain everything in life. In order to perform an important work effectively, one has to be in sound health. Nowadays, everyone is suffering from some sort of mental, health, chronic or physical illness, which however deprives them. Often bad habits such as smoking have brought upon diseases and weakness upon a person which he is not aware of and are of no value to their family and society.',
-    'Alcohol is taken in almost all cool and cold climates, and to a very much less extent in hot ones. It is taken by people who live in the Himalaya Mountains, but not nearly so much by those who live in the plains of India. Alcohol is not necessary in any way to anybody. The regular use of alcohol, even in small quantities, tends to cause mischief in many ways to various organs of the body. It affects the liver, it weakens the mental powers, and lessens the energy of the body.',
+    'So a couple weeks ago, me and my friends were sitting on this cement kind of pedestal (as we called it) It’s '
+    'basically the steps up to the portable. (classroom that no one uses) and this weird supply French teacher comes '
+    'up to us and says: you shouldn’t be sitting on this ground, it’s too cold and it’s bad for your ovaries. I asked '
+    'her how or why and she said that if children sit on cold ground their ovaries will freeze and that we won’t be '
+    'able to have kids.',
+    'One of the most valuable possession of human life is its health. With good health, one can attain everything in '
+    'life. In order to perform an important work effectively, one has to be in sound health. Nowadays, everyone is '
+    'suffering from some sort of mental, health, chronic or physical illness, which however deprives them. Often bad '
+    'habits such as smoking have brought upon diseases and weakness upon a person which he is not aware of and are of '
+    'no value to their family and society.',
+    'Alcohol is taken in almost all cool and cold climates, and to a very much less extent in hot ones. It is taken '
+    'by people who live in the Himalaya Mountains, but not nearly so much by those who live in the plains of India. '
+    'Alcohol is not necessary in any way to anybody. The regular use of alcohol, even in small quantities, '
+    'tends to cause mischief in many ways to various organs of the body. It affects the liver, it weakens the mental '
+    'powers, and lessens the energy of the body.',
 
-    'The Computer is an automatic device that performs mathematical calculations and logical operations. They are being put to use in widely divergent fields such as book-keeping, spaceflight controls, passanger reservation service, language translation etc. There are two categories: analog and digital. The former represents numbers by some physical quantity such as length, angular relation or electric current whereas the latter represent numbers by seperate devices for each digit.'
-    ]
+    'The Computer is an automatic device that performs mathematical calculations and logical operations. They are '
+    'being put to use in widely divergent fields such as book-keeping, spaceflight controls, passanger reservation '
+    'service, language translation etc. There are two categories: analog and digital. The former represents numbers '
+    'by some physical quantity such as length, angular relation or electric current whereas the latter represent '
+    'numbers by seperate devices for each digit. '
+]
 random.shuffle(paragraph_list)
 
 labelParagraph = Label(paragraph_frame, text=paragraph_list[0], font=('arial', 14, 'bold'),
@@ -104,13 +209,13 @@ wrongwords_count_label.grid(row=0, column=11, padx=5)
 buttonFrame = Frame(mainFrame)
 buttonFrame.grid(row=4, column=0)
 
-startButton = ttk.Button(buttonFrame, text='Start', command=start_timer)
+startButton = ttk.Button(buttonFrame, text='Start', command=start)
 startButton.grid(row=0, column=0, padx=10)
 # use ttk. to apply themes
-resetButton = ttk.Button(buttonFrame, text='Reset', state=DISABLED)
+resetButton = ttk.Button(buttonFrame, text='Reset', state=DISABLED, command=reset)
 resetButton.grid(row=0, column=1, padx=10)
 
-exitButton = ttk.Button(buttonFrame, text='Exit', command=root.destroy)
+exitButton = ttk.Button(buttonFrame, text='Exit', command=exit_window)
 exitButton.grid(row=0, column=2, padx=10)
 
 keyboard_frame = Frame(mainFrame)
@@ -245,10 +350,6 @@ labelspace = Label(spaceFrame, text='', bg='black', fg='white', font=('arial', 1
                    width=40, height=2)
 labelspace.grid(row=0, column=6, padx=5)
 
-
-def changeBG(widget):
-    widget.config(bg='dark blue')
-    widget.after(300, lambda: widget.config(bg='black'))
 
 
 label_number = [label1, label2, label3, label4, label5, label6, label7, label8, label9, label0]
